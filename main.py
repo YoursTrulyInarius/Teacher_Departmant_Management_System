@@ -6,7 +6,7 @@ class InformationSystemApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Teacher Management System")
-        self.root.geometry("1100x650")
+        self.root.geometry("1100x800")
         self.root.configure(bg="#f4f4f9")
 
         self.db = Database()
@@ -20,76 +20,107 @@ class InformationSystemApp:
         style = ttk.Style()
         style.theme_use("clam")
         
+        # Professional Colors
+        self.colors = {
+            "primary": "#2c3e50",    # Dark Midnight
+            "secondary": "#34495e",  # Lighter Midnight
+            "accent": "#3498db",     # Bright Blue
+            "bg": "#f8f9fa",         # Light Gray Bg
+            "white": "#ffffff",
+            "success": "#27ae60",
+            "warning": "#f39c12",
+            "danger": "#e74c3c",
+            "text": "#2c3e50"
+        }
+
         # Configure Treeview
         style.configure("Treeview", 
                         background="#ffffff", 
-                        foreground="#333333", 
-                        rowheight=30, 
+                        foreground="#2c3e50", 
+                        rowheight=35, 
                         fieldbackground="#ffffff",
                         font=("Segoe UI", 10))
-        style.map("Treeview", background=[("selected", "#0078d7")])
+        style.map("Treeview", background=[("selected", "#3498db")])
         
         style.configure("Treeview.Heading", 
-                        background="#0078d7", 
+                        background="#2c3e50", 
                         foreground="white", 
+                        relief="flat",
                         font=("Segoe UI", 10, "bold"))
+        style.map("Treeview.Heading", background=[("active", "#34495e")])
         
-        # Buttons
-        style.configure("Action.TButton", font=("Segoe UI", 10), padding=5)
+        # Alternating row colors
+        self.tree_tag_colors = ("#ffffff", "#f2f4f6")
 
     def create_widgets(self):
-        # Sidebar/Form Container
-        self.form_frame = tk.Frame(self.root, bg="#ffffff", padx=20, pady=20, width=300)
-        self.form_frame.pack(side=tk.LEFT, fill=tk.Y)
-        self.form_frame.pack_propagate(False)
+        # Sidebar/Form Container - Modern Dark Look
+        self.sidebar = tk.Frame(self.root, bg=self.colors["primary"], padx=25, pady=30, width=320)
+        self.sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        self.sidebar.pack_propagate(False)
 
-        tk.Label(self.form_frame, text="Teacher Record", font=("Segoe UI", 14, "bold"), bg="#ffffff", fg="#0078d7").pack(pady=(0, 20))
+        tk.Label(self.sidebar, text="TMS", font=("Segoe UI", 16, "bold"), 
+                 bg=self.colors["primary"], fg=self.colors["white"]).pack(pady=(0, 30))
 
-        # Form Fields
+        # Form Fields with modern styling
         self.fields = {}
         labels = ["First Name", "Last Name", "Email", "Department", "Phone", "Address"]
         for label in labels:
-            tk.Label(self.form_frame, text=label, bg="#ffffff", font=("Segoe UI", 10)).pack(anchor=tk.W)
-            entry = tk.Entry(self.form_frame, font=("Segoe UI", 10), bd=1, relief=tk.SOLID)
-            entry.pack(fill=tk.X, pady=(0, 10))
+            lbl = tk.Label(self.sidebar, text=label.upper(), bg=self.colors["primary"], 
+                           fg="#bdc3c7", font=("Segoe UI", 8, "bold"))
+            lbl.pack(anchor=tk.W, pady=(2, 0))
+            
+            entry = tk.Entry(self.sidebar, font=("Segoe UI", 10), bd=0, 
+                             highlightthickness=1, highlightbackground="#34495e",
+                             bg="#34495e", fg="white", insertbackground="white")
+            entry.pack(fill=tk.X, pady=(1, 8), ipady=3)
             self.fields[label] = entry
 
-        # Action Buttons
-        btn_container = tk.Frame(self.form_frame, bg="#ffffff")
-        btn_container.pack(fill=tk.X, pady=20)
+        # Action Buttons Container
+        btn_container = tk.Frame(self.sidebar, bg=self.colors["primary"])
+        btn_container.pack(fill=tk.X, pady=(15, 0))
 
-        self.add_btn = tk.Button(btn_container, text="Add Record", command=self.add_record, bg="#28a745", fg="white", font=("Segoe UI", 10, "bold"), bd=0, padx=10, pady=5)
-        self.add_btn.pack(fill=tk.X, pady=5)
+        def create_btn(text, cmd, color):
+            btn = tk.Button(btn_container, text=text, command=cmd, bg=color, fg="white", 
+                            font=("Segoe UI", 10, "bold"), bd=0, cursor="hand2",
+                            activebackground=color, activeforeground="white")
+            btn.pack(fill=tk.X, pady=4, ipady=4)
+            return btn
 
-        self.update_btn = tk.Button(btn_container, text="Update Record", command=self.update_record, bg="#ffc107", fg="#333", font=("Segoe UI", 10, "bold"), bd=0, padx=10, pady=5)
-        self.update_btn.pack(fill=tk.X, pady=5)
-
-        self.delete_btn = tk.Button(btn_container, text="Delete Record", command=self.delete_record, bg="#dc3545", fg="white", font=("Segoe UI", 10, "bold"), bd=0, padx=10, pady=5)
-        self.delete_btn.pack(fill=tk.X, pady=5)
-
-        self.clear_btn = tk.Button(btn_container, text="Clear Fields", command=self.clear_fields, bg="#6c757d", fg="white", font=("Segoe UI", 10, "bold"), bd=0, padx=10, pady=5)
-        self.clear_btn.pack(fill=tk.X, pady=5)
+        self.add_btn = create_btn("ADD TEACHER", self.add_record, self.colors["success"])
+        self.update_btn = create_btn("UPDATE RECORD", self.update_record, self.colors["warning"])
+        self.delete_btn = create_btn("DELETE RECORD", self.delete_record, self.colors["danger"])
+        
+        tk.Frame(btn_container, height=1, bg="#34495e").pack(fill=tk.X, pady=15)
+        self.clear_btn = create_btn("CLEAR FORM", self.clear_fields, "#7f8c8d")
 
         # Main Content Area
         self.content_frame = tk.Frame(self.root, bg="#f4f4f9", padx=20, pady=20)
         self.content_frame.pack(side=tk.RIGHT, expand=True, fill=tk.BOTH)
 
-        # Search bar
+        # Search bar - Modern Style
         search_frame = tk.Frame(self.content_frame, bg="#f4f4f9")
-        search_frame.pack(fill=tk.X, pady=(0, 10))
+        search_frame.pack(fill=tk.X, pady=(0, 20))
         
-        tk.Label(search_frame, text="Search:", bg="#f4f4f9", font=("Segoe UI", 10)).pack(side=tk.LEFT)
-        self.search_entry = tk.Entry(search_frame, font=("Segoe UI", 10), bd=1, relief=tk.SOLID)
-        self.search_entry.pack(side=tk.LEFT, padx=10, fill=tk.X, expand=True)
+        tk.Label(search_frame, text="SEARCH RECORDS:", bg="#f4f4f9", 
+                 fg=self.colors["primary"], font=("Segoe UI", 9, "bold")).pack(side=tk.LEFT)
+        
+        self.search_entry = tk.Entry(search_frame, font=("Segoe UI", 11), bd=0, 
+                                     highlightthickness=1, highlightbackground="#dcdde1",
+                                     bg="white")
+        self.search_entry.pack(side=tk.LEFT, padx=15, fill=tk.X, expand=True, ipady=4)
         self.search_entry.bind("<KeyRelease>", self.search_records)
 
         # Table
         columns = ("ID", "First Name", "Last Name", "Email", "Department", "Phone", "Address")
-        self.tree = ttk.Treeview(self.content_frame, columns=columns, show="headings")
+        # Hide ID from displaycolumns
+        self.tree = ttk.Treeview(self.content_frame, columns=columns, show="headings", displaycolumns=columns[1:])
         
         for col in columns:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=120 if col in ["Email", "Address", "Department"] else 100)
+            if col != "ID":
+                self.tree.heading(col, text=col)
+                self.tree.column(col, width=120 if col in ["Email", "Address", "Department"] else 100)
+            else:
+                self.tree.column(col, width=0, stretch=tk.NO)
         
         self.tree.pack(expand=True, fill=tk.BOTH)
         self.tree.bind("<<TreeviewSelect>>", self.on_item_select)
@@ -98,8 +129,12 @@ class InformationSystemApp:
         for item in self.tree.get_children():
             self.tree.delete(item)
         records = self.db.fetch_records()
-        for record in records:
-            self.tree.insert("", tk.END, values=record)
+        for i, record in enumerate(records):
+            tag = 'evenrow' if i % 2 == 0 else 'oddrow'
+            self.tree.insert("", tk.END, values=record, tags=(tag,))
+        
+        self.tree.tag_configure('evenrow', background=self.tree_tag_colors[0])
+        self.tree.tag_configure('oddrow', background=self.tree_tag_colors[1])
 
     def on_item_select(self, event):
         selection = self.tree.selection()
@@ -166,8 +201,12 @@ class InformationSystemApp:
         for item in self.tree.get_children():
             self.tree.delete(item)
         records = self.db.search_records(term)
-        for record in records:
-            self.tree.insert("", tk.END, values=record)
+        for i, record in enumerate(records):
+            tag = 'evenrow' if i % 2 == 0 else 'oddrow'
+            self.tree.insert("", tk.END, values=record, tags=(tag,))
+        
+        self.tree.tag_configure('evenrow', background=self.tree_tag_colors[0])
+        self.tree.tag_configure('oddrow', background=self.tree_tag_colors[1])
 
 if __name__ == "__main__":
     root = tk.Tk()
