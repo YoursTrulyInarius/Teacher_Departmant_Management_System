@@ -10,13 +10,14 @@ class Database:
         return sqlite3.connect(self.db_name)
 
     def init_db(self):
-        """Initialize the database and create the records table if it doesn't exist."""
+        """Initialize the database and create the teachers table if it doesn't exist."""
         query = """
-        CREATE TABLE IF NOT EXISTS records (
+        CREATE TABLE IF NOT EXISTS teachers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
             email TEXT,
+            department TEXT,
             phone TEXT,
             address TEXT
         )
@@ -27,16 +28,16 @@ class Database:
         conn.commit()
         conn.close()
 
-    def add_record(self, first_name, last_name, email, phone, address):
-        query = "INSERT INTO records (first_name, last_name, email, phone, address) VALUES (?, ?, ?, ?, ?)"
+    def add_record(self, first_name, last_name, email, department, phone, address):
+        query = "INSERT INTO teachers (first_name, last_name, email, department, phone, address) VALUES (?, ?, ?, ?, ?, ?)"
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(query, (first_name, last_name, email, phone, address))
+        cursor.execute(query, (first_name, last_name, email, department, phone, address))
         conn.commit()
         conn.close()
 
     def fetch_records(self):
-        query = "SELECT * FROM records"
+        query = "SELECT * FROM teachers"
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(query)
@@ -44,20 +45,20 @@ class Database:
         conn.close()
         return records
 
-    def update_record(self, record_id, first_name, last_name, email, phone, address):
+    def update_record(self, record_id, first_name, last_name, email, department, phone, address):
         query = """
-        UPDATE records 
-        SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ? 
+        UPDATE teachers 
+        SET first_name = ?, last_name = ?, email = ?, department = ?, phone = ?, address = ? 
         WHERE id = ?
         """
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(query, (first_name, last_name, email, phone, address, record_id))
+        cursor.execute(query, (first_name, last_name, email, department, phone, address, record_id))
         conn.commit()
         conn.close()
 
     def delete_record(self, record_id):
-        query = "DELETE FROM records WHERE id = ?"
+        query = "DELETE FROM teachers WHERE id = ?"
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(query, (record_id,))
@@ -66,13 +67,13 @@ class Database:
 
     def search_records(self, search_term):
         query = """
-        SELECT * FROM records 
-        WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?
+        SELECT * FROM teachers 
+        WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR department LIKE ?
         """
         term = f"%{search_term}%"
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute(query, (term, term, term))
+        cursor.execute(query, (term, term, term, term))
         records = cursor.fetchall()
         conn.close()
         return records

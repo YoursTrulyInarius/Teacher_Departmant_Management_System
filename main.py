@@ -5,8 +5,8 @@ from database import Database
 class InformationSystemApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Information Management System")
-        self.root.geometry("1000x600")
+        self.root.title("Teacher Management System")
+        self.root.geometry("1100x650")
         self.root.configure(bg="#f4f4f9")
 
         self.db = Database()
@@ -43,11 +43,11 @@ class InformationSystemApp:
         self.form_frame.pack(side=tk.LEFT, fill=tk.Y)
         self.form_frame.pack_propagate(False)
 
-        tk.Label(self.form_frame, text="Information Record", font=("Segoe UI", 14, "bold"), bg="#ffffff", fg="#0078d7").pack(pady=(0, 20))
+        tk.Label(self.form_frame, text="Teacher Record", font=("Segoe UI", 14, "bold"), bg="#ffffff", fg="#0078d7").pack(pady=(0, 20))
 
         # Form Fields
         self.fields = {}
-        labels = ["First Name", "Last Name", "Email", "Phone", "Address"]
+        labels = ["First Name", "Last Name", "Email", "Department", "Phone", "Address"]
         for label in labels:
             tk.Label(self.form_frame, text=label, bg="#ffffff", font=("Segoe UI", 10)).pack(anchor=tk.W)
             entry = tk.Entry(self.form_frame, font=("Segoe UI", 10), bd=1, relief=tk.SOLID)
@@ -84,12 +84,12 @@ class InformationSystemApp:
         self.search_entry.bind("<KeyRelease>", self.search_records)
 
         # Table
-        columns = ("ID", "First Name", "Last Name", "Email", "Phone", "Address")
+        columns = ("ID", "First Name", "Last Name", "Email", "Department", "Phone", "Address")
         self.tree = ttk.Treeview(self.content_frame, columns=columns, show="headings")
         
         for col in columns:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=100)
+            self.tree.column(col, width=120 if col in ["Email", "Address", "Department"] else 100)
         
         self.tree.pack(expand=True, fill=tk.BOTH)
         self.tree.bind("<<TreeviewSelect>>", self.on_item_select)
@@ -115,10 +115,12 @@ class InformationSystemApp:
             self.fields["Last Name"].insert(0, values[2])
             self.fields["Email"].delete(0, tk.END)
             self.fields["Email"].insert(0, values[3])
+            self.fields["Department"].delete(0, tk.END)
+            self.fields["Department"].insert(0, values[4])
             self.fields["Phone"].delete(0, tk.END)
-            self.fields["Phone"].insert(0, values[4])
+            self.fields["Phone"].insert(0, values[5])
             self.fields["Address"].delete(0, tk.END)
-            self.fields["Address"].insert(0, values[5])
+            self.fields["Address"].insert(0, values[6])
 
     def add_record(self):
         data = {k: v.get() for k, v in self.fields.items()}
@@ -126,8 +128,8 @@ class InformationSystemApp:
             messagebox.showwarning("Validation Error", "First and Last Name are required.")
             return
         
-        self.db.add_record(data["First Name"], data["Last Name"], data["Email"], data["Phone"], data["Address"])
-        messagebox.showinfo("Success", "Record added successfully.")
+        self.db.add_record(data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
+        messagebox.showinfo("Success", "Teacher record added successfully.")
         self.clear_fields()
         self.load_records()
 
@@ -137,8 +139,8 @@ class InformationSystemApp:
             return
         
         data = {k: v.get() for k, v in self.fields.items()}
-        self.db.update_record(self.selected_item, data["First Name"], data["Last Name"], data["Email"], data["Phone"], data["Address"])
-        messagebox.showinfo("Success", "Record updated successfully.")
+        self.db.update_record(self.selected_item, data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
+        messagebox.showinfo("Success", "Teacher record updated successfully.")
         self.clear_fields()
         self.load_records()
 
