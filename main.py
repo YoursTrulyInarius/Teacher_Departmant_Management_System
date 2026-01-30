@@ -61,6 +61,9 @@ class InformationSystemApp:
         tk.Label(self.sidebar, text="TMS", font=("Segoe UI", 16, "bold"), 
                  bg=self.colors["primary"], fg=self.colors["white"]).pack(pady=(0, 30))
 
+        # Register validation command
+        vcmd = (self.root.register(self.validate_phone_input), '%P')
+
         # Form Fields with modern styling
         self.fields = {}
         labels = ["First Name", "Last Name", "Email", "Department", "Phone", "Address"]
@@ -69,9 +72,17 @@ class InformationSystemApp:
                            fg="#bdc3c7", font=("Segoe UI", 8, "bold"))
             lbl.pack(anchor=tk.W, pady=(2, 0))
             
-            entry = tk.Entry(self.sidebar, font=("Segoe UI", 10), bd=0, 
-                             highlightthickness=1, highlightbackground="#34495e",
-                             bg="#34495e", fg="white", insertbackground="white")
+            # Conditionally apply validation to the Phone field
+            if label == "Phone":
+                entry = tk.Entry(self.sidebar, font=("Segoe UI", 10), bd=0, 
+                                 highlightthickness=1, highlightbackground="#34495e",
+                                 bg="#34495e", fg="white", insertbackground="white",
+                                 validate="key", validatecommand=vcmd)
+            else:
+                entry = tk.Entry(self.sidebar, font=("Segoe UI", 10), bd=0, 
+                                 highlightthickness=1, highlightbackground="#34495e",
+                                 bg="#34495e", fg="white", insertbackground="white")
+            
             entry.pack(fill=tk.X, pady=(1, 8), ipady=3)
             self.fields[label] = entry
 
@@ -162,6 +173,14 @@ class InformationSystemApp:
         if not data["First Name"] or not data["Last Name"]:
             messagebox.showwarning("Validation Error", "First and Last Name are required.")
             return
+
+        if data["Phone"] and len(data["Phone"]) != 11:
+            messagebox.showwarning("Validation Error", "Phone number must be exactly 11 digits.")
+            return
+
+        if data["Email"] and "@" not in data["Email"]:
+            messagebox.showwarning("Validation Error", "Invalid email address. Must contain '@'.")
+            return
         
         self.db.add_record(data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
         messagebox.showinfo("Success", "Teacher record added successfully.")
@@ -174,6 +193,15 @@ class InformationSystemApp:
             return
         
         data = {k: v.get() for k, v in self.fields.items()}
+        
+        if data["Phone"] and len(data["Phone"]) != 11:
+            messagebox.showwarning("Validation Error", "Phone number must be exactly 11 digits.")
+            return
+
+        if data["Email"] and "@" not in data["Email"]:
+            messagebox.showwarning("Validation Error", "Invalid email address. Must contain '@'.")
+            return
+
         self.db.update_record(self.selected_item, data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
         messagebox.showinfo("Success", "Teacher record updated successfully.")
         self.clear_fields()
@@ -207,6 +235,14 @@ class InformationSystemApp:
         
         self.tree.tag_configure('evenrow', background=self.tree_tag_colors[0])
         self.tree.tag_configure('oddrow', background=self.tree_tag_colors[1])
+
+    def validate_phone_input(self, P):
+        """Allow only digits and limit to 11 characters."""
+        if P == "":
+            return True
+        if P.isdigit() and len(P) <= 11:
+            return True
+        return False
 
 if __name__ == "__main__":
     root = tk.Tk()
