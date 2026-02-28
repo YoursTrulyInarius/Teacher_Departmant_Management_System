@@ -5,11 +5,14 @@ A clean and intuitive desktop-based Teacher Management System built with Python 
 ## 🚀 Features
 
 - **Teacher Records Management**: Full CRUD (Create, Read, Update, Delete) operations for teacher information.
-- **Department Tracking**: Organize teachers by their respective departments.
+- **Department Tracking**: Select from a predefined list or type custom departments using the editable dropdown (Combobox).
 - **Dynamic Search**: Real-time filtering of records by name, email, or department.
-- **Modern UI**: A user-friendly interface using Tkinter's `ttk` and custom styling (optimized for 1100x650 resolution).
-- **Persistent Storage**: Data is safely stored in a local SQLite database (`ims_records.db`).
-- **Validation**: Basic form validation to ensure name integrity.
+- **Modern UI**: A user-friendly interface using Tkinter's `ttk` and custom styling (optimized for 1100x800 resolution).
+- **Persistent Storage**: Data is safely stored in a local SQLite database (`ims_records.db`) with unique constraints.
+- **Strict Validation**:
+    - **Required Fields**: All fields must be filled.
+    - **Email Integrity**: Must contain '@' and be unique across the system.
+    - **Phone Format**: Exactly 11 digits, strictly numeric (letters and special characters are blocked during entry).
 
 ## 🛠️ Tech Stack
 

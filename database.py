@@ -16,10 +16,10 @@ class Database:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             first_name TEXT NOT NULL,
             last_name TEXT NOT NULL,
-            email TEXT,
-            department TEXT,
-            phone TEXT,
-            address TEXT
+            email TEXT UNIQUE NOT NULL,
+            department TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            address TEXT NOT NULL
         )
         """
         conn = self.get_connection()
@@ -27,6 +27,22 @@ class Database:
         cursor.execute(query)
         conn.commit()
         conn.close()
+
+    def email_exists(self, email, exclude_id=None):
+        """Check if an email already exists, optionally excluding a specific record ID."""
+        if exclude_id:
+            query = "SELECT COUNT(*) FROM teachers WHERE email = ? AND id != ?"
+            params = (email, exclude_id)
+        else:
+            query = "SELECT COUNT(*) FROM teachers WHERE email = ?"
+            params = (email,)
+        
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count > 0
 
     def add_record(self, first_name, last_name, email, department, phone, address):
         query = "INSERT INTO teachers (first_name, last_name, email, department, phone, address) VALUES (?, ?, ?, ?, ?, ?)"

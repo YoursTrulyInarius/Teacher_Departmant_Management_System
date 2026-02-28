@@ -78,13 +78,20 @@ class InformationSystemApp:
                                  highlightthickness=1, highlightbackground="#34495e",
                                  bg="#34495e", fg="white", insertbackground="white",
                                  validate="key", validatecommand=vcmd)
+                entry.pack(fill=tk.X, pady=(1, 8), ipady=3)
+                self.fields[label] = entry
+            elif label == "Department":
+                # Create a Combobox for Department
+                departments = ["CS", "IT", "Engineering", "Arts", "Science", "Education", "Business"]
+                entry = ttk.Combobox(self.sidebar, values=departments, font=("Segoe UI", 10))
+                entry.pack(fill=tk.X, pady=(1, 8), ipady=2)
+                self.fields[label] = entry
             else:
                 entry = tk.Entry(self.sidebar, font=("Segoe UI", 10), bd=0, 
                                  highlightthickness=1, highlightbackground="#34495e",
                                  bg="#34495e", fg="white", insertbackground="white")
-            
-            entry.pack(fill=tk.X, pady=(1, 8), ipady=3)
-            self.fields[label] = entry
+                entry.pack(fill=tk.X, pady=(1, 8), ipady=3)
+                self.fields[label] = entry
 
         # Action Buttons Container
         btn_container = tk.Frame(self.sidebar, bg=self.colors["primary"])
@@ -169,17 +176,25 @@ class InformationSystemApp:
             self.fields["Address"].insert(0, values[6])
 
     def add_record(self):
-        data = {k: v.get() for k, v in self.fields.items()}
-        if not data["First Name"] or not data["Last Name"]:
-            messagebox.showwarning("Validation Error", "First and Last Name are required.")
-            return
+        data = {k: v.get().strip() for k, v in self.fields.items()}
+        
+        # Check all fields are required
+        for field, value in data.items():
+            if not value:
+                messagebox.showwarning("Validation Error", f"All fields are required. '{field}' is missing.")
+                return
 
-        if data["Phone"] and len(data["Phone"]) != 11:
+        if len(data["Phone"]) != 11:
             messagebox.showwarning("Validation Error", "Phone number must be exactly 11 digits.")
             return
 
-        if data["Email"] and "@" not in data["Email"]:
+        if "@" not in data["Email"]:
             messagebox.showwarning("Validation Error", "Invalid email address. Must contain '@'.")
+            return
+        
+        # Check for duplicate email
+        if self.db.email_exists(data["Email"]):
+            messagebox.showerror("Duplication Error", f"Email '{data['Email']}' is already registered.")
             return
         
         self.db.add_record(data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
@@ -192,14 +207,25 @@ class InformationSystemApp:
             messagebox.showwarning("Selection Error", "Please select a record to update.")
             return
         
-        data = {k: v.get() for k, v in self.fields.items()}
+        data = {k: v.get().strip() for k, v in self.fields.items()}
         
-        if data["Phone"] and len(data["Phone"]) != 11:
+        # Check all fields are required
+        for field, value in data.items():
+            if not value:
+                messagebox.showwarning("Validation Error", f"All fields are required. '{field}' is missing.")
+                return
+
+        if len(data["Phone"]) != 11:
             messagebox.showwarning("Validation Error", "Phone number must be exactly 11 digits.")
             return
 
-        if data["Email"] and "@" not in data["Email"]:
+        if "@" not in data["Email"]:
             messagebox.showwarning("Validation Error", "Invalid email address. Must contain '@'.")
+            return
+
+        # Check for duplicate email (excluding current record)
+        if self.db.email_exists(data["Email"], exclude_id=self.selected_item):
+            messagebox.showerror("Duplication Error", f"Email '{data['Email']}' is already registered to another teacher.")
             return
 
         self.db.update_record(self.selected_item, data["First Name"], data["Last Name"], data["Email"], data["Department"], data["Phone"], data["Address"])
