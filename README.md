@@ -44,5 +44,3 @@ Run the following command to start the application:
 ```bash
 python main.py
 ```
-
-Created By: Sonjeev C. Cabardo
